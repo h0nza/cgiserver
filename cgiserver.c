@@ -531,6 +531,25 @@ _unsupported:
 		 * _filename: the local file name, relative to `.`
 		 */
 		_filename = calloc(sizeof(char) * (strlen(PAGES_DIRECTORY) + strlen(filename) + 2), 1);
+
+//PATH_INFO: is first segment of filename executable?
+		{ size_t n;
+		  struct stat stats;
+		  char filename0[1000] = {'\0'};
+		  char *pslash = strchr(filename+1, '/');
+		  if (pslash /*&& pslash[1]*/ ) {
+			 n = pslash - filename;
+			 strcat(filename0, PAGES_DIRECTORY);
+			 strncat(filename0, filename, n);
+		     if (stat(filename0, &stats) == 0 && !S_ISDIR(stats.st_mode) && (stats.st_mode & S_IXOTH) ) {
+				 setenv("PATH_INFO", filename + n, 1);
+				 filename[n] = '\0';
+		     }
+		  } else {
+				 setenv("PATH_INFO", "", 1);
+                  }
+		}
+
 		strcat(_filename, PAGES_DIRECTORY);
 		strcat(_filename, filename);
 		if (strstr(_filename, "%")) {
